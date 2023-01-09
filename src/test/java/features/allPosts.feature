@@ -1,3 +1,4 @@
+@Posts
 Feature: Verify all posts are being returned using Rest-Assured
   Scenario: Testing API returns correct response and posts list
     Given user do nothing

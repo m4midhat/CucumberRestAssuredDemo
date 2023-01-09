@@ -1,7 +1,11 @@
 package Steps;
 
+import Data.Request.RequestUsers;
 import Data.Response.Posts;
 import Data.Response.Users;
+import com.github.javafaker.Faker;
+import io.cucumber.cienvironment.internal.com.eclipsesource.json.Json;
+import io.cucumber.cienvironment.internal.com.eclipsesource.json.JsonObject;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -10,8 +14,11 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
+
+import static io.restassured.RestAssured.given;
 
 @Slf4j
 public class allUsers {
@@ -31,7 +38,7 @@ public class allUsers {
 
     @When("User calls the posts API")
     public void userCallsPostsAPI() {
-        response = RestAssured.given()
+        response = given()
                 .contentType(ContentType.JSON)
                 .get(postsBaseURI + postsRoute);
         log.info("Getting : "+ postsBaseURI + postsRoute);
@@ -40,7 +47,7 @@ public class allUsers {
 
     @When("User calls the User API")
     public void userCallsUsersAPI() {
-        response = RestAssured.given()
+        response = given()
                 .contentType(ContentType.JSON)
                 .get(userBaseURI + usersRoute);
         log.info("Getting : "+ userBaseURI + usersRoute);
@@ -80,7 +87,7 @@ public class allUsers {
     @When("User calls the User API with {string}")
     public void userCallsTheUserAPIWith(String userID) {
         String reqURl = userBaseURI+usersRoute+userID;
-        response = RestAssured.given()
+        response = given()
                 .contentType(ContentType.JSON)
                 .get(reqURl);
     }
@@ -99,4 +106,30 @@ public class allUsers {
     }
 
 
+    @When("User calls the create user API")
+    public void userCallsTheCreateUserAPI() {
+        Faker faker = new Faker();
+        String name = faker.name().firstName();
+        String job = faker.job().title();
+        log.info(name+" : "+job);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add("name", name);
+        jsonObject.add("job", job);
+
+        RestAssured.baseURI=userBaseURI;
+        RestAssured.basePath=usersRoute;
+
+        response = given()
+                .contentType(ContentType.JSON)
+                .body(jsonObject)
+                .when()
+                .post()
+                .then().extract().response();
+    }
+
+    @Then("User is created")
+    public void userIsCreated() {
+        Assert.assertEquals(response.statusCode(), 201);
+        response.body().prettyPrint();
+    }
 }

@@ -1,3 +1,4 @@
+@Users
 Feature: Verify specific user is being returned using Rest-Assured
   Scenario Outline: Testing API returns correct response and specific user
     Given user do nothing
